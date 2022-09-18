@@ -36,7 +36,7 @@ huffman = (frequencies) ->
   while work.length > 1
     # Note: popping the first two elements then sorting is basically emulating a priority queue
     work.sort (a, b) -> a.frequency - b.frequency
-#    console.log ([w.symbol, w.frequency] for w in work)
+#    console.error ([w.symbol, w.frequency] for w in work)
     left = work[0]
     right = work[1]
     work = work[2..]  # Remove the nodes
@@ -48,6 +48,21 @@ huffman = (frequencies) ->
   for n in leafNodes
     encoded[n.symbol] = n.code
   return encoded
+
+analyze = (frequencies, encoding) ->
+  originalSize = 0
+  originalSize += f for s, f of frequencies
+  originalSize *= Math.log2(originalSize)
+  encodedSize = 0
+  encodedSize += code.length * frequencies[s] for s, code of encoding
+
+  ratio = encodedSize / originalSize
+  entropy = 1 - ratio
+
+  console.error "\n\nOriginal size = #{originalSize}"
+  console.error "Encoded size = #{encodedSize}"
+  console.error "Compression ratio = #{Math.round(ratio * 100)}%"
+  console.error "Entropy = #{Math.round(entropy * 100)}%"
 
 json = ""
 
@@ -74,4 +89,7 @@ input.on 'end', () ->
 
   encoding = huffman(frequencies)
   output.end JSON.stringify(encoding)
+
+  # Analyze results
+  analyze frequencies, encoding
   return
